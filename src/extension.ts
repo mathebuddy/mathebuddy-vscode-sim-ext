@@ -201,6 +201,13 @@ class CatCodingPanel {
 				<!--<h1 id="lines-of-code-counter">0</h1>-->
 
 <div class="container">
+
+	<div class="row">
+		<div class="col my-2">
+			<button type="button" class="btn btn-sm btn-outline-primary">compile</button>
+		</div>
+	</div>
+
 	<!-- DEVICE AND LOG AREA -->
 	<div class="row text-start">
 		<div id="device" class="col shadow m-0 p-0 bg-white" style="width:320px;min-width:320px;max-width:320px;height:640px;min-height:640px;max-height:640px;">
