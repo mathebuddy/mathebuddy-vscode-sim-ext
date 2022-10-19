@@ -109,6 +109,14 @@ class CatCodingPanel {
 					case 'alert':
 						vscode.window.showErrorMessage(message.text);
 						return;
+					case 'getText': {
+						const text = vscode.window.activeTextEditor?.document.getText();
+						this._panel.webview.postMessage({ 
+							command: 'getText', 
+							text: text
+						});
+						return;
+					}
 				}
 			},
 			null,
@@ -174,6 +182,38 @@ class CatCodingPanel {
 		// Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();
 
+		const docData = JSON.stringify({
+			"id": "",
+			"author": "",
+			"modifiedDate": "",
+			"documents": [
+				{
+					"title": "Introduction",
+					"alias": "intro",
+					"items": [
+						{
+							"type": "paragraph",
+							"items": [
+								{
+									"type": "text",
+									"value": "Some text here "
+								},
+								{
+									"type": "inline-math",
+									"items": [
+										{
+											"type": "text",
+											"value": "x ^ 2 = - 1"
+										}
+									]
+								},
+							]
+						}
+					]
+				}
+			]
+		});
+
 		return `<!DOCTYPE html>
 			<html lang="en">
 			<head>
@@ -183,7 +223,9 @@ class CatCodingPanel {
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
 				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline' ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
+				<!-- TODO: reactivate the following
+					<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline' ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
+				-->
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -202,7 +244,7 @@ class CatCodingPanel {
 
 					<div class="row">
 						<div class="col my-2">
-							<button type="button" class="btn btn-sm btn-outline-primary">compile</button>
+							<button onclick="compile();" type="button" class="btn btn-sm btn-outline-primary">compile</button>
 						</div>
 					</div>
 
@@ -222,44 +264,39 @@ class CatCodingPanel {
 				</div>
 
 				<script nonce="${nonce}">
-					//console.log("XXXXXXX");
 					var deviceContent = document.getElementById('device-content');
-					//deviceContent.innerHTML = 'aaaxxxbbb';
-					var documentData = {
-						"id": "",
-						"author": "",
-						"modifiedDate": "",
-						"documents": [
-							{
-								"title": "Introduction",
-								"alias": "intro",
-								"items": [
-									{
-										"type": "paragraph",
-										"items": [
-											{
-												"type": "text",
-												"value": "Some text here "
-											},
-											{
-												"type": "inline-math",
-												"items": [
-												  {
-													"type": "text",
-													"value": "x ^ 2 = - 1"
-												  }
-												]
-											},
-										]
-									}
-								]
-							}
-						]
-					};
+					var documentData = JSON.parse('${docData}');
 					var sim = mathebuddySIM.createSim(documentData, deviceContent);
 					if (mathebuddySIM.generateDOM(sim, 'intro') == false) {
 						console.log("ERROR: there is no document 'intro'");
 					}
+
+					function compile() {
+						const vscode = acquireVsCodeApi();
+						console.log(vscode);
+
+
+						/*vscode.postMessage({
+							command: 'alert',
+							text: 'compiling'
+						});*/
+						vscode.postMessage({
+							command: 'getText'
+						});
+
+						window.addEventListener('message', event => {
+							const message = event.data;
+							switch (message.command) {
+							case 'getText':
+								vscode.postMessage({
+									command: 'alert',
+									text: 'received text: ' + message.text
+								});
+								break;
+							}
+						});
+					}
+
 				</script>
 
 				<!--<script nonce="${nonce}" src="${scriptUri}"></script>-->
