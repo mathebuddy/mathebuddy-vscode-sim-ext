@@ -34,6 +34,7 @@ function getWebviewOptions(extensionUri: vscode.Uri): vscode.WebviewOptions {
 		enableScripts: true,
 
 		// And restrict the webview to only loading content from our extension's `media` directory.
+		// TODO: extend to node_modules
 		localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
 	};
 }
@@ -182,7 +183,7 @@ class CatCodingPanel {
 					Use a content security policy to only allow loading images from https or from our extension directory,
 					and only allow scripts that have a specific nonce.
 				-->
-				<!--<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">-->
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline' ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -196,31 +197,29 @@ class CatCodingPanel {
 				<title>mathe:buddy</title>
 			</head>
 			<body>
-				<!--<h1>mathe:buddy simulator</h1>-->
-				<!--<img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />-->
-				<!--<h1 id="lines-of-code-counter">0</h1>-->
+				
+				<div class="container">
 
-<div class="container">
+					<div class="row">
+						<div class="col my-2">
+							<button type="button" class="btn btn-sm btn-outline-primary">compile</button>
+						</div>
+					</div>
 
-	<div class="row">
-		<div class="col my-2">
-			<button type="button" class="btn btn-sm btn-outline-primary">compile</button>
-		</div>
-	</div>
+					<!-- DEVICE AND LOG AREA -->
+					<div class="row text-start">
+						<div id="device" class="col shadow m-0 p-0 bg-white" style="width:320px;min-width:320px;max-width:320px;height:640px;min-height:640px;max-height:640px;">
+							<img src="${appBG_ImgUri}" class="p-0" style="width:100%" />
+							<div id="device-content" class="py-0 px-2" style="height: 500px; overflow-x:hidden; overflow-y: scroll; font-size: 85%; transform: translate(0,-5px);">
+							</div>
+						</div>
+						<div id="log" class="col bg-dark mx-3 small" style="max-height: 640px; overflow: scroll;">
+							<div id="log-content" class="p-2">
+							</div>
+						</div>
+					</div>
 
-	<!-- DEVICE AND LOG AREA -->
-	<div class="row text-start">
-		<div id="device" class="col shadow m-0 p-0 bg-white" style="width:320px;min-width:320px;max-width:320px;height:640px;min-height:640px;max-height:640px;">
-			<img src="${appBG_ImgUri}" class="p-0" style="width:100%" />
-			<div id="device-content" class="py-0 px-2" style="height: 500px; overflow-x:hidden; overflow-y: scroll; font-size: 85%; transform: translate(0,-5px);">
-			</div>
-		</div>
-		<div id="log" class="col bg-dark mx-3 small" style="max-height: 640px; overflow: scroll;">
-			<div id="log-content" class="p-2">
-			</div>
-		</div>
-	</div>
-</div>				
+				</div>
 
 				<script nonce="${nonce}">
 					//console.log("XXXXXXX");
