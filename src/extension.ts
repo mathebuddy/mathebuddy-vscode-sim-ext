@@ -138,10 +138,10 @@ class CatCodingPanel {
 							const compiler = new mathebuddyCompiler.Compiler();
 							
 							compiler.run(text);
-							const blub = JSON.stringify(compiler.getCourse().toJSON(), null, 2);
-							console.log(blub);
-							//this.courseData = JSON.stringify(compiler.getCourse().toJSON(), null, 2);
-							//console.log(this.courseData);
+							//const blub = JSON.stringify(compiler.getCourse().toJSON(), null, 2);
+							//console.log(blub);
+							this.courseData = JSON.stringify(compiler.getCourse().toJSON());
+							console.log(this.courseData);
 
 							/*this._panel.webview.postMessage({
 								command: 'refresh',
@@ -210,7 +210,7 @@ class CatCodingPanel {
 		// Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();
 
-		const courseData = this.courseData;
+		const data = this.courseData;
 
 		/*const docData = JSON.stringify({
 			"id": "",
@@ -244,7 +244,7 @@ class CatCodingPanel {
 			]
 		});*/
 
-		return `<!DOCTYPE html>
+		const html = `<!DOCTYPE html>
 			<html lang="en">
 			<head>
 				<meta charset="UTF-8">
@@ -300,9 +300,10 @@ class CatCodingPanel {
 					const vscode = acquireVsCodeApi();
 
 					console.log('#####1');
-					var compiledJson = JSON.parse('${courseData}');
-					console.log('#####2');
+					console.log('${data}');
+					var compiledJson = JSON.parse('${data}');
 					console.log(compiledJson);
+					console.log('#####2');
 
 					//var documentData = JSON.parse('$ {docData}');
 					//console.log('!!!!!!!!!!!');
@@ -344,6 +345,10 @@ class CatCodingPanel {
 				
 			</body>
 			</html>`;
+
+		//console.log(html);
+
+		return html;
 	}
 }
 
