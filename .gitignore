@@ -4,4 +4,5 @@ out/
 media/mathebuddy-compiler.min.js
 media/mathebuddy-simulator.min.js
 media/bootstrap.min.css
-media/fontawesome.min.css
+media/fontawesome-free
+
