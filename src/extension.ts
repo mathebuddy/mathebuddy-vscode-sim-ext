@@ -1,3 +1,13 @@
+/**
+ * mathe:buddy - eine gamifizierte Lern-App für die Hoehere Mathematik
+ * (c) 2022 by TH Koeln
+ * Author: Andreas Schwenk contact@compiler-construction.com
+ * Funded by: FREIRAUM 2022, Stiftung Innovation in der Hochschullehre
+ * License: GPL-3.0-or-later
+ */
+
+// TODO: remove all "cat" stuff (... from the original webview example)
+
 import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -112,7 +122,7 @@ class CatCodingPanel {
 					case 'getText': {
 						const text = vscode.window.activeTextEditor?.document.getText();
 						this._panel.webview.postMessage({ 
-							command: 'getText', 
+							command: 'compile', 
 							text: text
 						});
 						return;
@@ -164,7 +174,8 @@ class CatCodingPanel {
 		const appBG_ImgUri = webview.asWebviewUri(appBG_Img);		
 
 		// TODO:
-		//const simScript = vscode.Uri.joinPath(this._extensionUri, 'node_modules', '@mathebuddy', 'mathebuddy-simulator', 'build', 'mathebuddy-simulator.min.js');
+		const compilerScript = vscode.Uri.joinPath(this._extensionUri, 'media', 'mathebuddy-compiler.min.js');
+		const compilerScriptUri = webview.asWebviewUri(compilerScript);
 		const simScript = vscode.Uri.joinPath(this._extensionUri, 'media', 'mathebuddy-simulator.min.js');
 		const simScriptUri = webview.asWebviewUri(simScript);
 
@@ -234,6 +245,7 @@ class CatCodingPanel {
 
 				<link href="${bootstrapUri}" rel="stylesheet">
 
+				<script nonce="${nonce}" src="${compilerScriptUri}"></script>
 				<script nonce="${nonce}" src="${simScriptUri}"></script>
 
 				<title>mathe:buddy</title>
@@ -275,11 +287,6 @@ class CatCodingPanel {
 						const vscode = acquireVsCodeApi();
 						console.log(vscode);
 
-
-						/*vscode.postMessage({
-							command: 'alert',
-							text: 'compiling'
-						});*/
 						vscode.postMessage({
 							command: 'getText'
 						});
@@ -287,11 +294,14 @@ class CatCodingPanel {
 						window.addEventListener('message', event => {
 							const message = event.data;
 							switch (message.command) {
-							case 'getText':
+							case 'compile':
 								vscode.postMessage({
 									command: 'alert',
 									text: 'received text: ' + message.text
 								});
+
+								//TODO: mathebuddyCOMPILER
+
 								break;
 							}
 						});
