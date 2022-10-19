@@ -10,7 +10,10 @@
 
 import * as vscode from 'vscode';
 
+import * as mathebuddyCompiler from '@mathebuddy/mathebuddy-compiler/lib';
+
 export function activate(context: vscode.ExtensionContext) {
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('catCoding.start', () => {
 			CatCodingPanel.createOrShow(context.extensionUri);
@@ -63,6 +66,8 @@ class CatCodingPanel {
 	private readonly _panel: vscode.WebviewPanel;
 	private readonly _extensionUri: vscode.Uri;
 	private _disposables: vscode.Disposable[] = [];
+
+	private courseData = '{}';
 
 	public static createOrShow(extensionUri: vscode.Uri) {
 		const column = vscode.window.activeTextEditor
@@ -119,12 +124,32 @@ class CatCodingPanel {
 					case 'alert':
 						vscode.window.showErrorMessage(message.text);
 						return;
-					case 'getText': {
-						const text = vscode.window.activeTextEditor?.document.getText();
-						this._panel.webview.postMessage({ 
-							command: 'compile', 
-							text: text
-						});
+
+					case 'compile': {
+						let text = '';
+						if(vscode.window.activeTextEditor == undefined) {
+							vscode.window.showErrorMessage('first select a code window');
+						} else {
+
+							text = vscode.window.activeTextEditor.document.getText();
+
+							vscode.window.showErrorMessage('text = ' + text);
+
+							const compiler = new mathebuddyCompiler.Compiler();
+							
+							compiler.run(text);
+							const blub = JSON.stringify(compiler.getCourse().toJSON(), null, 2);
+							console.log(blub);
+							//this.courseData = JSON.stringify(compiler.getCourse().toJSON(), null, 2);
+							//console.log(this.courseData);
+
+							/*this._panel.webview.postMessage({
+								command: 'refresh',
+								data: this.courseJson
+							});*/
+					
+						}
+
 						return;
 					}
 				}
@@ -172,8 +197,8 @@ class CatCodingPanel {
 		const appBG_Img = vscode.Uri.joinPath(this._extensionUri, 'media', 'app-bg.png');
 		const appBG_ImgUri = webview.asWebviewUri(appBG_Img);		
 
-		const compilerScript = vscode.Uri.joinPath(this._extensionUri, 'media', 'mathebuddy-compiler.min.js');
-		const compilerScriptUri = webview.asWebviewUri(compilerScript);
+		//const compilerScript = vscode.Uri.joinPath(this._extensionUri, 'media', 'mathebuddy-compiler.min.js');
+		//const compilerScriptUri = webview.asWebviewUri(compilerScript);
 		const simScript = vscode.Uri.joinPath(this._extensionUri, 'media', 'mathebuddy-simulator.min.js');
 		const simScriptUri = webview.asWebviewUri(simScript);
 
@@ -184,6 +209,8 @@ class CatCodingPanel {
 
 		// Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();
+
+		const courseData = this.courseData;
 
 		/*const docData = JSON.stringify({
 			"id": "",
@@ -235,12 +262,12 @@ class CatCodingPanel {
 				<link href="${fontawesomeUri}" rel="stylesheet">
 				<link href="${bootstrapUri}" rel="stylesheet">
 
-				<script nonce="${nonce}" src="${compilerScriptUri}"></script>
+				<!--<script nonce="${nonce}" src="$ {compilerScriptUri}"></script>-->
 				<script nonce="${nonce}" src="${simScriptUri}"></script>
 
 				<title>mathe:buddy</title>
 			</head>
-			<body>
+			<body style="background-color: #aaaaaa;">
 				
 				<div class="container">
 
@@ -270,49 +297,50 @@ class CatCodingPanel {
 				<script nonce="${nonce}">
 					var deviceContent = document.getElementById('device-content');
 					var logContent = document.getElementById('log-content');
+					const vscode = acquireVsCodeApi();
+
+					console.log('#####1');
+					var compiledJson = JSON.parse('${courseData}');
+					console.log('#####2');
+					console.log(compiledJson);
 
 					//var documentData = JSON.parse('$ {docData}');
-
-					console.log('!!!!!!!!!!!');
+					//console.log('!!!!!!!!!!!');
 					
+					function render() {
+						//if(compiledJson == null)
+						//	return;
+						/*
+						var sim = mathebuddySIM.createSim(compiledJson, deviceContent);
+						if (mathebuddySIM.generateDOM(sim, 'intro') == false) { // TODO: 'intro' is static
+							console.log("ERROR: there is no document 'intro'"); // TODO
+						}
+						logContent.innerHTML = '<div class="text-white">' + mathebuddySIM.getJSON(sim) + '</div>';
+						*/
+					}
+					render();
+
 					function compile() {
-						const vscode = acquireVsCodeApi();
-
 						vscode.postMessage({
-							command: 'getText'
+							command: 'compile'
 						});
+						//console.log('clicked button');
+					}
 
-						window.addEventListener('message', event => {
-							const message = event.data;
-							switch (message.command) {
-							case 'compile':
-								/*vscode.postMessage({
-									command: 'alert',
-									text: 'received text: ' + message.text
-								});*/
-
-								var compiler = new mathebuddyCOMPILER.Compiler();
-								compiler.run(message.text);
-								var compiledJson = compiler.getCourse().toJSON();
-								
-								//var compiledString = JSON.stringify(compiledJson, null, 2);
-								//console.log(compiledString);
-
-								var sim = mathebuddySIM.createSim(compiledJson, deviceContent);
-								if (mathebuddySIM.generateDOM(sim, 'intro') == false) { // TODO: 'intro' is static
-									console.log("ERROR: there is no document 'intro'"); // TODO
-								}
-								logContent.innerHTML = '<div class="text-white">' + mathebuddySIM.getJSON(sim) + '</div>';
-								// TODO: getHTML
-
+					/*window.addEventListener('message', event => {
+						const message = event.data;
+						switch (message.command) {
+							case 'refresh': {
+								compiledJson = message.data;
+								render();
 								break;
 							}
-						});
-					}
+						}
+					});*/
 
 				</script>
 
-				<!--<script nonce="${nonce}" src="${scriptUri}"></script>-->
+				<!--<script nonce="$ {nonce}" src="$ {scriptUri}"></script>-->
 				
 			</body>
 			</html>`;
