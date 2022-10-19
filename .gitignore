@@ -1,4 +1,6 @@
 node_modules/
 .DS_Store
 out/
+media/mathebuddy-compiler.min.js
 media/mathebuddy-simulator.min.js
+media/bootstrap.min.css
