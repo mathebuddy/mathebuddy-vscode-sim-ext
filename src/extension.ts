@@ -165,35 +165,27 @@ class CatCodingPanel {
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview/*, catGifPath: string*/) {
-		// Local path to main script run in the webview
+		// TODO: main.js is yet unused!
 		const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'media', 'main.js');
-		// And the uri we use to load this script in the webview
 		const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
 
 		const appBG_Img = vscode.Uri.joinPath(this._extensionUri, 'media', 'app-bg.png');
 		const appBG_ImgUri = webview.asWebviewUri(appBG_Img);		
 
-		// TODO:
 		const compilerScript = vscode.Uri.joinPath(this._extensionUri, 'media', 'mathebuddy-compiler.min.js');
 		const compilerScriptUri = webview.asWebviewUri(compilerScript);
 		const simScript = vscode.Uri.joinPath(this._extensionUri, 'media', 'mathebuddy-simulator.min.js');
 		const simScriptUri = webview.asWebviewUri(simScript);
 
-		// Local path to css styles
-		const styleResetPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'reset.css');
-		const stylesPathMainPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'vscode.css');
-
-		// Uri to load styles into webview
-		const stylesResetUri = webview.asWebviewUri(styleResetPath);
-		const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-
+		const fontawesomePath = vscode.Uri.joinPath(this._extensionUri, 'media/fontawesome-free/css', 'all.min.css');
+		const fontawesomeUri = webview.asWebviewUri(fontawesomePath);
 		const bootstrapPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'bootstrap.min.css');
 		const bootstrapUri = webview.asWebviewUri(bootstrapPath);
 
 		// Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();
 
-		const docData = JSON.stringify({
+		/*const docData = JSON.stringify({
 			"id": "",
 			"author": "",
 			"modifiedDate": "",
@@ -223,7 +215,7 @@ class CatCodingPanel {
 					]
 				}
 			]
-		});
+		});*/
 
 		return `<!DOCTYPE html>
 			<html lang="en">
@@ -240,9 +232,7 @@ class CatCodingPanel {
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-				<!--<link href="${stylesResetUri}" rel="stylesheet">
-				<link href="${stylesMainUri}" rel="stylesheet">-->
-
+				<link href="${fontawesomeUri}" rel="stylesheet">
 				<link href="${bootstrapUri}" rel="stylesheet">
 
 				<script nonce="${nonce}" src="${compilerScriptUri}"></script>
@@ -256,7 +246,9 @@ class CatCodingPanel {
 
 					<div class="row">
 						<div class="col my-2">
-							<button onclick="compile();" type="button" class="btn btn-sm btn-outline-primary">compile</button>
+							<button onclick="compile();" type="button" class="btn btn-sm btn-success">
+								<i class="fa-solid fa-play"></i>
+							</button>
 						</div>
 					</div>
 
@@ -277,15 +269,14 @@ class CatCodingPanel {
 
 				<script nonce="${nonce}">
 					var deviceContent = document.getElementById('device-content');
-					var documentData = JSON.parse('${docData}');
-					var sim = mathebuddySIM.createSim(documentData, deviceContent);
-					if (mathebuddySIM.generateDOM(sim, 'intro') == false) {
-						console.log("ERROR: there is no document 'intro'");
-					}
+					var logContent = document.getElementById('log-content');
 
+					//var documentData = JSON.parse('$ {docData}');
+
+					console.log('!!!!!!!!!!!');
+					
 					function compile() {
 						const vscode = acquireVsCodeApi();
-						console.log(vscode);
 
 						vscode.postMessage({
 							command: 'getText'
@@ -295,12 +286,24 @@ class CatCodingPanel {
 							const message = event.data;
 							switch (message.command) {
 							case 'compile':
-								vscode.postMessage({
+								/*vscode.postMessage({
 									command: 'alert',
 									text: 'received text: ' + message.text
-								});
+								});*/
 
-								//TODO: mathebuddyCOMPILER
+								var compiler = new mathebuddyCOMPILER.Compiler();
+								compiler.run(message.text);
+								var compiledJson = compiler.getCourse().toJSON();
+								
+								//var compiledString = JSON.stringify(compiledJson, null, 2);
+								//console.log(compiledString);
+
+								var sim = mathebuddySIM.createSim(compiledJson, deviceContent);
+								if (mathebuddySIM.generateDOM(sim, 'intro') == false) { // TODO: 'intro' is static
+									console.log("ERROR: there is no document 'intro'"); // TODO
+								}
+								logContent.innerHTML = '<div class="text-white">' + mathebuddySIM.getJSON(sim) + '</div>';
+								// TODO: getHTML
 
 								break;
 							}
