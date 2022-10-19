@@ -127,13 +127,17 @@ class CatCodingPanel {
 
 					case 'compile': {
 						let text = '';
+
+						//vscode.window.visibleTextEditors
+
 						if(vscode.window.activeTextEditor == undefined) {
-							vscode.window.showErrorMessage('first select a code window');
+							vscode.window.showErrorMessage('Error: You have to select a text editor!');
 						} else {
 
 							text = vscode.window.activeTextEditor.document.getText();
 
-							vscode.window.showErrorMessage('text = ' + text);
+							//vscode.window.showErrorMessage('text = ' + text);
+							//vscode.window.showInformationMessage('compiling..');
 
 							const compiler = new mathebuddyCompiler.Compiler();
 							
@@ -143,10 +147,10 @@ class CatCodingPanel {
 							this.courseData = JSON.stringify(compiler.getCourse().toJSON());
 							console.log(this.courseData);
 
-							/*this._panel.webview.postMessage({
+							this._panel.webview.postMessage({
 								command: 'refresh',
-								data: this.courseJson
-							});*/
+								data: this.courseData
+							});
 					
 						}
 
@@ -187,6 +191,12 @@ class CatCodingPanel {
 	private _updateForCat(webview: vscode.Webview) {
 		this._panel.title = 'mathe:buddy simulator';
 		this._panel.webview.html = this._getHtmlForWebview(webview);
+
+		this._panel.webview.postMessage({
+			command: 'refresh',
+			data: this.courseData
+		});
+
 	}
 
 	private _getHtmlForWebview(webview: vscode.Webview/*, catGifPath: string*/) {
@@ -210,7 +220,7 @@ class CatCodingPanel {
 		// Use a nonce to only allow specific scripts to be run
 		const nonce = getNonce();
 
-		const data = this.courseData;
+		//const data = this.courseData.replace('/\n/g', ''); // TODO
 
 		/*const docData = JSON.stringify({
 			"id": "",
@@ -267,17 +277,26 @@ class CatCodingPanel {
 
 				<title>mathe:buddy</title>
 			</head>
-			<body style="background-color: #aaaaaa;">
-				
-				<div class="container">
 
-					<div class="row">
-						<div class="col my-2">
-							<button onclick="compile();" type="button" class="btn btn-sm btn-success">
-								<i class="fa-solid fa-play"></i>
-							</button>
-						</div>
+			<body style="background-color: #aaaaaa;">
+
+				<div class="row bg-light rounded mx-0 my-2 small">
+					<div class="col my-2">
+						<button onclick="compile();" type="button" class="btn btn-sm btn-outline-success">
+							<i class="fa-solid fa-play"></i>
+						</button>
+
+						<button onclick="compile();" type="button" class="btn btn-sm btn-outline-success">
+							<i class="fa-brands fa-html5"></i>
+						</button>
+						<button onclick="compile();" type="button" class="btn btn-sm btn-outline-success">
+							<i class="fa-solid fa-code"></i>
+						</button>
+
 					</div>
+				</div>
+
+				<div class="container">
 
 					<!-- DEVICE AND LOG AREA -->
 					<div class="row text-start">
@@ -295,29 +314,35 @@ class CatCodingPanel {
 				</div>
 
 				<script nonce="${nonce}">
+	
+					// TODO: move implementation to file "media/main.js"
+
 					var deviceContent = document.getElementById('device-content');
 					var logContent = document.getElementById('log-content');
 					const vscode = acquireVsCodeApi();
 
-					console.log('#####1');
-					console.log('${data}');
-					var compiledJson = JSON.parse('${data}');
-					console.log(compiledJson);
-					console.log('#####2');
+					var compiledJson = null;
 
-					//var documentData = JSON.parse('$ {docData}');
-					//console.log('!!!!!!!!!!!');
+					/*console.log('#####1');
+					console.log('$ {data}');
+					try {
+						compiledJson = JSON.parse('$ {data}');
+					} catch(e) {
+						console.log("JSON.parse(..) failed! " + e);
+					}
+					console.log(compiledJson);
+					console.log('#####2');*/
 					
 					function render() {
-						//if(compiledJson == null)
-						//	return;
-						/*
+						if(compiledJson == null || ('documents' in compiledJson) == false) {
+							deviceContent.innerHTML = 'empty';
+							return;
+						}
 						var sim = mathebuddySIM.createSim(compiledJson, deviceContent);
 						if (mathebuddySIM.generateDOM(sim, 'intro') == false) { // TODO: 'intro' is static
 							console.log("ERROR: there is no document 'intro'"); // TODO
 						}
 						logContent.innerHTML = '<div class="text-white">' + mathebuddySIM.getJSON(sim) + '</div>';
-						*/
 					}
 					render();
 
@@ -328,16 +353,16 @@ class CatCodingPanel {
 						//console.log('clicked button');
 					}
 
-					/*window.addEventListener('message', event => {
+					window.addEventListener('message', event => {
 						const message = event.data;
 						switch (message.command) {
 							case 'refresh': {
-								compiledJson = message.data;
+								compiledJson = JSON.parse(message.data);
 								render();
 								break;
 							}
 						}
-					});*/
+					});
 
 				</script>
 
@@ -346,7 +371,7 @@ class CatCodingPanel {
 			</body>
 			</html>`;
 
-		//console.log(html);
+		console.log(html);
 
 		return html;
 	}
