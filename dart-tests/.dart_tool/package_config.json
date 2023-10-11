@@ -1,0 +1,26 @@
+{
+  "configVersion": 2,
+  "packages": [
+    {
+      "name": "js",
+      "rootUri": "file:///Users/andi/.pub-cache/hosted/pub.dev/js-0.6.7",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
+      "name": "meta",
+      "rootUri": "file:///Users/andi/.pub-cache/hosted/pub.dev/meta-1.10.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "test",
+      "rootUri": "../",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    }
+  ],
+  "generated": "2023-10-04T12:04:01.053789Z",
+  "generator": "pub",
+  "generatorVersion": "3.1.3"
+}

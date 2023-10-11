@@ -7,7 +7,16 @@
     "sourceMap": true,
     "strict": true,
     "rootDir": "src",
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "allowJs": true,
+    "checkJs": false
   },
-  "exclude": ["node_modules", ".vscode-test"]
+  "exclude": [
+    "node_modules",
+    ".vscode-test",
+    "src/jstest.js",
+    "dart-tests/",
+    "media/",
+    "out/"
+  ]
 }
